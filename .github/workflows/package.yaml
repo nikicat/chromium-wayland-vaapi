@@ -1,0 +1,21 @@
+name: Build ArchLinux package
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: nikicat/archlinux-yay
+      options: --privileged
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build package
+      run: |
+        cp -R $GITHUB_WORKSPACE /home/builduser/workspace
+        chown -R builduser:builduser /home/builduser/workspace
+        su builduser -c "yay --noconfirm -Bi /home/builduser/workspace"
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: package
+        path: "/home/builduser/workspace/*.pkg.tar.zst"
